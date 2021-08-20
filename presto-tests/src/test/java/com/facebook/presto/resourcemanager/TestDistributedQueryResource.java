@@ -80,7 +80,7 @@ public class TestDistributedQueryResource
         client = null;
     }
 
-    @Test(timeOut = 220_000, enabled = false)
+    @Test(timeOut = 220_000, enabled = true)
     public void testGetQueryInfos()
             throws Exception
     {
@@ -155,5 +155,15 @@ public class TestDistributedQueryResource
         assertEquals(finished, expectedFinished);
         assertEquals(running, expectedRunning);
         assertEquals(queued, expectedQueued);
+    }
+
+    @Test
+    public void testGetAllQueryInfoForLimits() {
+        runToCompletion(client, coordinator1, "SELECT 1");
+        runToFirstResult(client, coordinator1, "SELECT * from tpch.sf100.orders");
+        runToFirstResult(client, coordinator1, "SELECT * from tpch.sf101.orders");
+        runToFirstResult(client, coordinator1, "SELECT * from tpch.sf102.orders");
+        List<BasicQueryInfo> infos = getQueryInfos(client, coordinator1, "/v1/query?limit=1");
+        assertEquals(infos.size(), 1);
     }
 }
